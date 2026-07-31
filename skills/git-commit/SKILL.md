@@ -10,6 +10,9 @@ Commit the current working changes with a conventional commit message that has a
 ## Hard rules — never break these
 
 - **Never include `Co-Authored-By` or any Claude/AI authorship lines** in any commit message, ever.
+- **Keep the title at 72 characters or fewer.** This is GitHub's hard cutoff — GitHub truncates any summary line past 72 characters and hides the rest behind an ellipsis, so a longer title loses information in the UI. Count the characters and rewrite until it fits. Never exceed 72.
+- **In commit messages, never use em dashes or dashes as punctuation.** No "—", no "–", and no spaced hyphen (" - ") used as a pause or aside. Rewrite with complete sentences, commas, or parentheses instead. (Ordinary hyphens inside compound words like "tax-lot" or "well-crafted" are fine.) This rule governs the commit messages you write, not this skill doc.
+- **Write commit messages like a person, not a changelog bot.** Use plain, direct language. Say what changed and why the way you would explain it to a teammate. Cut filler, hedging, and restated obvious context.
 - **Always include a body.** A title-only commit is never acceptable. Every commit must have a blank line after the title followed by 1–2 paragraphs explaining the *why* and *what* of the change.
 - **Always use conventional commit format** for the title.
 - **Never force-push under any circumstances.** Rewriting pushed history is their call, not yours.
@@ -71,9 +74,10 @@ If extra instructions narrow the scope, use targeted `git add <path>` calls inst
 
 **Title rules:**
 - Imperative mood ("add", "fix", "remove" — not "added", "fixes", "removing")
-- 72 characters max
+- 72 characters max, counting the type and scope. This is GitHub's truncation cutoff, so treat it as a hard limit and count the characters before committing. Aim for around 50 when you can.
 - No period at the end
 - Lowercase after the colon
+- No em dashes or dashes as punctuation in the message
 
 ### Body (required — never skip)
 
@@ -84,7 +88,9 @@ One blank line after the title, then 1–2 paragraphs. The body should answer:
 
 Be specific. "Fix a bug" is not a body. "Removes the `is_custom_allocation_search` param from SRL calls because the API deprecated it in v3 and started returning 400s" is a body.
 
-Keep each paragraph under ~4 sentences. Don't pad — if one tight paragraph covers it, that's fine.
+Write it like a person would. Plain, direct sentences. No em dashes or dashes as punctuation; use commas or parentheses instead. Skip filler that inflates the message without adding meaning, boilerplate summaries of the diff, or restating things the reader can see in the title or the code. If the change is simple, a single short paragraph is better than padding it out.
+
+Keep each paragraph under ~4 sentences. Don't pad. If one tight paragraph covers it, that's fine.
 
 ### Footer (optional)
 
