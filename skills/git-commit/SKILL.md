@@ -78,6 +78,13 @@ If extra instructions narrow the scope, use targeted `git add <path>` calls inst
 - No period at the end
 - Lowercase after the colon
 - No em dashes or dashes as punctuation in the message
+- **Describe the user-visible outcome, not the internal mechanism.** Say what now works and for whom. Naming a policy object, filter, or scope that only makes sense once you've read the code is a rejected title.
+- Test before you commit: would a teammate who has never opened these files understand the title? If not, rewrite it around the behavior.
+
+```
+❌ fix(proposals): exempt proposals-all-access from the advisor filter
+✅ fix(proposals): load households for proposals-all-access users
+```
 
 ### Body (required — never skip)
 
@@ -88,9 +95,64 @@ One blank line after the title, then 1–2 paragraphs. The body should answer:
 
 Be specific. "Fix a bug" is not a body. "Removes the `is_custom_allocation_search` param from SRL calls because the API deprecated it in v3 and started returning 400s" is a body.
 
-Write it like a person would. Plain, direct sentences. No em dashes or dashes as punctuation; use commas or parentheses instead. Skip filler that inflates the message without adding meaning, boilerplate summaries of the diff, or restating things the reader can see in the title or the code. If the change is simple, a single short paragraph is better than padding it out.
+**Body rules:**
+- **Write it like a person would.** Plain, direct sentences. No em dashes or dashes as punctuation; use commas or parentheses instead. Skip filler, boilerplate summaries of the diff, and anything the reader can already see in the title or the code.
+- **At most one identifier, and only if it's the thing you changed.** Threading several class, method, and exception names through prose forces the reader to hold a symbol table. Describe the behavior instead: "the household lookup still filtered to households they personally own" beats naming the scope that does the filtering.
+- **Report, don't argue.** Cut sentences that defend or characterize the change, like "this is a consistency fix rather than a widening" or "note that…". State what is true and let the reader judge.
+- **Read in order, never double back.** One idea per sentence, each following from the last. No mid-sentence justifications, no parentheticals that send the reader backwards.
+- **Two paragraphs maximum, roughly four sentences each,** shorter when the change allows. If a sentence can go without losing information a future reader needs, cut it.
 
-Keep each paragraph under ~4 sentences. Don't pad. If one tight paragraph covers it, that's fine.
+Don't pad. If one tight paragraph covers it, that's fine.
+
+### Worked example — rejected vs. approved
+
+The same change, written twice. The first version was rejected as "hard to follow, too wordy, and the title doesn't make sense."
+
+**❌ Rejected**
+
+```
+fix(proposals): exempt proposals-all-access from the advisor filter
+
+A user holding Persona-ProposalsAllAccess alongside a base advisor role could open any
+proposal in the firm, because Proposals::ProposalPolicy::Scope drops the user filter for
+that role, but could not load that proposal's household: TenantScope#user_scope narrows
+anyone holding "advisor" to their own records, and roles are multi-valued. The household
+lookup raised RecordNotFound, which the missing /404 route turned into a redirect, so the
+frontend resolved a 200 with an unrelated body and crashed reading household.clients.
+
+Adding the role to the early return drops the user filter while leaving tenant isolation
+intact. This is a consistency fix rather than a widening: a user holding only
+Persona-ProposalsAllAccess already had firm-wide visibility, since the role was absent from
+user_scope and fell through to nil, so today the same persona sees the whole firm or just
+its own records depending on which unrelated roles accompany it. Note the scope is shared,
+so this also widens Proposals::AdvisoryFeeSchedulePolicy and the Advisor Assistant
+household tools, and it restores the proposal's own household to the setup page's Client
+Relationship dropdown.
+```
+
+Five identifiers plus an exception name; a title naming a filter no reader can picture; a
+second paragraph that stops to defend itself mid-sentence.
+
+**✅ Approved**
+
+```
+fix(proposals): load households for proposals-all-access users
+
+Persona-ProposalsAllAccess users can open any proposal in their firm, but the household
+lookup still filtered to households they personally own. Opening another advisor's proposal
+therefore found no household, and the failed lookup reached the browser as a crash and an
+error banner rather than a real error, because the app has no /404 route and Rails turns the
+404 into a redirect the browser silently follows.
+
+TenantScope#user_scope now skips the owner filter for this role, keeping tenant isolation
+intact. The role already behaved this way when held on its own; the filter only applied
+because these users also carry the base advisor role. The scope is shared, so advisory fee
+schedules and the Advisor Assistant household tools widen the same way, and the proposal's
+household reappears in the setup page dropdown.
+```
+
+One identifier, the method actually changed. Every consequence stated plainly, none
+argued. The same information, read start to finish without backtracking.
 
 ### Footer (optional)
 
